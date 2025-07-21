@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: devflix-container
-        image: bharathi136/devflix-pipeline
+        image: bharathi136/devflix-pipeline:latest
         ports:
         - containerPort: 3000
