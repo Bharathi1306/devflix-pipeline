@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devflix-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devflix
+  template:
+    metadata:
+      labels:
+        app: devflix
+    spec:
+      containers:
+      - name: devflix-container
+        image: bharathi136/devflix-pipeline
+        ports:
+        - containerPort: 3000
