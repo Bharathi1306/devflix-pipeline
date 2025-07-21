@@ -1,34 +1,51 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Clone') {
-            steps {
-                git url: 'https://github.com/Bharathi1306/devflix-pipeline.git', branch: 'main'
-            }
-        }
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker-cred')
+    }
 
-        stage('Install Dependencies') {
+    stages {
+        stage('Clone Repository') {
             steps {
-                sh 'npm install'
+                git credentialsId: 'git-cred', url: 'https://github.com/Bharathi1306/devflix-pipeline.git', branch: 'main'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t bharathi136/devflix-app .'
+                script {
+                    def appName = "bharathi136/devflix-app"
+                    def appTag = "latest"
+                    sh "docker build -t ${appName}:${appTag} ."
+                }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Docker Image to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'devflix-dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push bharathi136/devflix-app
-                    '''
+                script {
+                    def appName = "bharathi136/devflix-app"
+                    def appTag = "latest"
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    sh "docker push ${appName}:${appTag}"
                 }
             }
+        }
+
+        stage('Clean Docker Images (optional)') {
+            steps {
+                sh 'docker rmi bharathi136/devflix-app:latest || true'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and push completed successfully.'
+        }
+        failure {
+            echo '❌ Build failed.'
         }
     }
 }
