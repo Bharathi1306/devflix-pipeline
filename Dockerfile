@@ -1,18 +1,20 @@
-# Base image
+# Use official Node.js LTS image
 FROM node:18
 
-# Create app directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy package files and install deps
+# Copy only package files first for better caching
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the app
+# Copy the full application source code
 COPY . .
 
-# Expose app port
+# Expose the app's port
 EXPOSE 3000
 
-# Start the app
+# Run the app
 CMD ["node", "app.js"]
